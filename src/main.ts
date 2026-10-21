@@ -94,11 +94,6 @@ window.addEventListener("DOMContentLoaded", () => {
   const menuButton = document.querySelector<HTMLButtonElement>("#menu-button");
   const tabStrip = document.querySelector<HTMLElement>("#tab-strip");
   const newTabButton = document.querySelector<HTMLButtonElement>("#new-tab-button");
-  const menu = document.querySelector<HTMLElement>("#options-menu");
-  const historyButton = document.querySelector<HTMLButtonElement>("#history-button");
-  const settingsButton = document.querySelector<HTMLButtonElement>("#settings-button");
-  const aboutButton = document.querySelector<HTMLButtonElement>("#about-button");
-  const checkVersionButton = document.querySelector<HTMLButtonElement>("#check-version-button");
   const aboutDialog = document.querySelector<HTMLElement>("#about-dialog");
   const aboutClose = document.querySelector<HTMLButtonElement>("#about-close");
   const appVersion = document.querySelector<HTMLElement>("#app-version");
@@ -169,13 +164,11 @@ window.addEventListener("DOMContentLoaded", () => {
     );
   };
 
-  const closeMenu = (restoreView = true) => {
-    const wasOpen = menu !== null && !menu.hasAttribute("hidden");
-    menu?.setAttribute("hidden", "");
-    menuButton?.setAttribute("aria-expanded", "false");
-    frame?.classList.remove("options-open");
-    if (wasOpen && restoreView) restoreActiveViewAfterDialog();
-    else if (wasOpen) window.requestAnimationFrame(() => void syncBrowserTabBounds());
+  let menuIsOpen = false;
+  let lastMenuClosedAt = 0;
+
+  const closeMenu = (_restoreView = true) => {
+    void invoke("hide_options_menu").catch(() => undefined);
   };
 
   const getActiveTab = () => tabs.find((tab) => tab.id === activeTabId) ?? tabs[0];
@@ -307,6 +300,7 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   const activateTab = async (id: number) => {
+    closeMenu(false);
     if (!tabs.some((tab) => tab.id === id)) return;
     const sequence = ++activationSequence;
     if (id !== activeTabId) await hideBrowserTabs();
@@ -436,7 +430,7 @@ window.addEventListener("DOMContentLoaded", () => {
         await invoke("navigate_browser_tab", { tabLabel: tab.label, url });
       }
       const hasOpenDialog = [aboutDialog, versionDialog, updateDialog].some((dialog) => dialog && !dialog.hasAttribute("hidden"));
-      if (activeTabId === tab.id && !hasOpenDialog && menu?.hasAttribute("hidden")) {
+      if (activeTabId === tab.id && !hasOpenDialog) {
         await invoke("show_browser_tab", { tabLabel: tab.label });
         if (activeTabId === tab.id && focus) await invoke("focus_browser_tab", { tabLabel: tab.label });
         else if (activeTabId !== tab.id) await invoke("hide_browser_tab", { tabLabel: tab.label });
@@ -839,7 +833,7 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   const restoreActiveViewAfterDialog = () => {
-    if (!versionDialog?.hasAttribute("hidden") || !aboutDialog?.hasAttribute("hidden") || !updateDialog?.hasAttribute("hidden") || !menu?.hasAttribute("hidden")) return;
+    if (!versionDialog?.hasAttribute("hidden") || !aboutDialog?.hasAttribute("hidden") || !updateDialog?.hasAttribute("hidden")) return;
     if (!sessionRestoreStarted) {
       void restoreSavedSession();
       return;
@@ -1058,33 +1052,51 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   menuButton?.addEventListener("click", async () => {
-    const isOpen = menuButton.getAttribute("aria-expanded") === "true";
-    if (isOpen) {
+    if (menuIsOpen) {
       closeMenu();
-    } else {
-      frame?.classList.toggle("options-open", Boolean(getActiveTab()?.hasWebview));
-      await syncBrowserTabBounds();
-      menuButton.setAttribute("aria-expanded", "true");
-      menu?.removeAttribute("hidden");
+      return;
+    }
+    if (Date.now() - lastMenuClosedAt < 250) {
+      return;
+    }
+    const rect = menuButton.getBoundingClientRect();
+    await invoke("show_options_menu", {
+      x: rect.left - 6.0,
+      y: rect.bottom + 8.0,
+    });
+  });
+
+  void listen<boolean>("options-menu-visibility", ({ payload }) => {
+    menuIsOpen = payload;
+    menuButton?.setAttribute("aria-expanded", String(menuIsOpen));
+    if (!menuIsOpen) {
+      lastMenuClosedAt = Date.now();
     }
   });
 
-  historyButton?.addEventListener("click", () => void openInternalPage("history"));
-  settingsButton?.addEventListener("click", () => void openInternalPage("settings"));
-
-  aboutButton?.addEventListener("click", async () => {
-    closeMenu(false);
-    await hideViewsForDialog();
-    aboutDialog?.removeAttribute("hidden");
-    aboutClose?.focus();
+  void listen<string>("options-menu-action", ({ payload: action }) => {
+    if (action === "history") {
+      void openInternalPage("history");
+    } else if (action === "settings") {
+      void openInternalPage("settings");
+    } else if (action === "about") {
+      void (async () => {
+        closeMenu(false);
+        await hideViewsForDialog();
+        aboutDialog?.removeAttribute("hidden");
+        aboutClose?.focus();
+      })();
+    } else if (action === "check-version") {
+      void checkVersionStatus();
+    } else if (action === "exit") {
+      void appWindow.close();
+    }
   });
-
-  checkVersionButton?.addEventListener("click", () => void checkVersionStatus());
 
   aboutClose?.addEventListener("click", () => {
     aboutDialog?.setAttribute("hidden", "");
     restoreActiveViewAfterDialog();
-    aboutButton?.focus();
+    menuButton?.focus();
   });
 
   updateNow?.addEventListener("click", () => void installAvailableUpdate());
@@ -1210,7 +1222,11 @@ window.addEventListener("DOMContentLoaded", () => {
   renderTabs();
   updateNavigationControls();
   void syncMaximizedState();
+  void appWindow.onMoved(() => {
+    closeMenu();
+  });
   void appWindow.onResized(() => {
+    closeMenu();
     void syncMaximizedState();
     refreshBrowserTabLayout();
   });

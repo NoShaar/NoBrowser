@@ -405,10 +405,6 @@ button:focus-visible {
     linear-gradient(148deg, #0d141b 0%, #0a1016 54%, #0b1218 100%);
 }
 
-.app-frame.options-open .browser-stage {
-  margin-left: 210px;
-}
-
 .browser-message {
   position: absolute;
   right: 22px;
@@ -914,6 +910,18 @@ button:focus-visible {
   background: #e9b3a8;
 }
 
+body.menu-window-body {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 6px 10px 24px 10px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: transparent;
+  user-select: none;
+}
+
 .options-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -927,6 +935,13 @@ button:focus-visible {
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.36);
   animation: menu-arrive 130ms ease-out both;
   backdrop-filter: blur(14px);
+}
+
+.options-menu.menu-window-content {
+  position: static;
+  width: 194px;
+  margin: 0;
+  flex: 0 0 194px;
 }
 
 .options-menu button {

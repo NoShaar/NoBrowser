@@ -28,6 +28,7 @@ export default defineConfig({
       input: {
         main: resolve(root, "index.html"),
         splashscreen: resolve(root, "splash.html"),
+        "options-menu": resolve(root, "options-menu.html"),
       },
     },
   },

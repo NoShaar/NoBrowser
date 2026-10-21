@@ -1,7 +1,8 @@
 use serde::Serialize;
 use tauri::{
-    AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, Webview, WebviewUrl,
     webview::{PageLoadEvent, WebviewBuilder},
+    AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, Webview, WebviewUrl,
+    WebviewWindowBuilder,
 };
 
 #[derive(Clone, Serialize)]
@@ -20,6 +21,7 @@ fn ensure_main_caller(caller: &Webview) -> Result<(), String> {
         Err("Comando disponível apenas na janela principal.".into())
     }
 }
+
 
 fn ensure_tab_label(label: &str) -> Result<(), String> {
     let suffix = label.strip_prefix("browser-tab-").unwrap_or_default();
@@ -61,6 +63,7 @@ fn emit_page_state(app: &AppHandle, state: BrowserPageState) {
     let _ = app.emit_to("main", "browser-tab-state", state);
 }
 
+#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 async fn create_browser_tab(
     caller: Webview,
@@ -230,10 +233,90 @@ fn close_browser_tab(caller: Webview, app: AppHandle, tab_label: String) -> Resu
         .map_err(|error| error.to_string())
 }
 
+#[tauri::command]
+fn show_options_menu(caller: Webview, app: AppHandle, x: f64, y: f64) -> Result<(), String> {
+    ensure_main_caller(&caller)?;
+    if !x.is_finite() || !y.is_finite() {
+        return Err("Coordenadas inválidas para o menu.".into());
+    }
+
+    let main_window = app
+        .get_webview_window("main")
+        .ok_or_else(|| "A janela principal não está disponível.".to_string())?;
+    let menu_window = app
+        .get_webview_window("options-menu")
+        .ok_or_else(|| "O menu de opções não está disponível.".to_string())?;
+
+    let main_pos = main_window
+        .outer_position()
+        .map_err(|error| error.to_string())?;
+    let scale = main_window.scale_factor().map_err(|error| error.to_string())?;
+    let logical_main = main_pos.to_logical::<f64>(scale);
+    let target_x = (logical_main.x + x - 10.0).round();
+    let target_y = (logical_main.y + y - 6.0).round();
+
+    menu_window
+        .set_position(LogicalPosition::new(target_x, target_y))
+        .map_err(|error| error.to_string())?;
+    menu_window.show().map_err(|error| error.to_string())?;
+    menu_window.set_focus().map_err(|error| error.to_string())?;
+    let _ = app.emit_to("main", "options-menu-visibility", true);
+    let _ = app.emit_to("options-menu", "options-menu-shown", ());
+    Ok(())
+}
+
+#[tauri::command]
+fn hide_options_menu(app: AppHandle) -> Result<(), String> {
+    if let Some(menu_window) = app.get_webview_window("options-menu") {
+        let _ = menu_window.hide();
+        let _ = app.emit_to("main", "options-menu-visibility", false);
+    }
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .setup(|app| {
+            let main_window = app
+                .get_webview_window("main")
+                .ok_or_else(|| "A janela principal não foi encontrada.".to_string())?;
+
+            let menu_builder = WebviewWindowBuilder::new(
+                app,
+                "options-menu",
+                WebviewUrl::App("options-menu.html".into()),
+            )
+            .title("NoBrowser Menu")
+            .inner_size(214.0, 241.0)
+            .resizable(false)
+            .decorations(false)
+            .transparent(true)
+            .shadow(false)
+            .skip_taskbar(true)
+            .visible(false);
+
+            #[cfg(windows)]
+            let menu_builder = menu_builder.owner(&main_window).map_err(|e| e.to_string())?;
+
+            #[cfg(not(windows))]
+            let menu_builder = menu_builder.parent(&main_window).map_err(|e| e.to_string())?;
+
+            let menu_window = menu_builder.build().map_err(|e| e.to_string())?;
+
+            let menu_app = app.handle().clone();
+            menu_window.on_window_event(move |event| {
+                if let tauri::WindowEvent::Focused(false) = event
+                    && let Some(menu) = menu_app.get_webview_window("options-menu")
+                {
+                    let _ = menu.hide();
+                    let _ = menu_app.emit_to("main", "options-menu-visibility", false);
+                }
+            });
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             create_browser_tab,
             navigate_browser_tab,
@@ -244,7 +327,44 @@ pub fn run() {
             hide_browser_tab,
             focus_browser_tab,
             close_browser_tab,
+            show_options_menu,
+            hide_options_menu,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ensure_tab_label_valid() {
+        assert!(ensure_tab_label("browser-tab-1").is_ok());
+        assert!(ensure_tab_label("browser-tab-999").is_ok());
+    }
+
+    #[test]
+    fn test_ensure_tab_label_invalid() {
+        assert!(ensure_tab_label("main").is_err());
+        assert!(ensure_tab_label("browser-tab-").is_err());
+        assert!(ensure_tab_label("browser-tab-abc").is_err());
+    }
+
+    #[test]
+    fn test_parse_browser_url_valid() {
+        assert!(parse_browser_url("https://www.youtube.com").is_ok());
+        assert!(parse_browser_url("http://localhost:8080").is_ok());
+    }
+
+    #[test]
+    fn test_parse_browser_url_invalid_scheme() {
+        assert!(parse_browser_url("file:///etc/passwd").is_err());
+        assert!(parse_browser_url("javascript:alert(1)").is_err());
+    }
+
+    #[test]
+    fn test_parse_browser_url_credentials() {
+        assert!(parse_browser_url("https://user:pass@example.com").is_err());
+    }
 }
