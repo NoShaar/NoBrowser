@@ -1,6 +1,6 @@
 # NoBrowser
 
-NoBrowser é um navegador desktop em construção, feito com Tauri 2, Rust e TypeScript. A versão 0.3.0 adiciona abas e navegação em webviews do sistema; a 0.3.1 corrige o redimensionamento após restaurar a janela; e a 0.4.0 adiciona histórico local, sugestões de sites visitados, busca pelo Google, configurações e atalhos. No Windows, as páginas usam WebView2; outros sistemas usam o motor web nativo disponível.
+NoBrowser é um navegador desktop em construção, feito com Tauri 2, Rust e TypeScript. A versão 0.3.0 adiciona abas e navegação em webviews do sistema; a 0.3.1 corrige o redimensionamento após restaurar a janela; a 0.4.0 adiciona histórico local, sugestões de sites visitados, busca pelo Google, configurações e atalhos; e a 0.4.1 mantém a página visível ao abrir Opções. No Windows, as páginas usam WebView2; outros sistemas usam o motor web nativo disponível.
 
 ## Usar
 

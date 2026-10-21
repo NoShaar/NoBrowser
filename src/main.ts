@@ -173,7 +173,9 @@ window.addEventListener("DOMContentLoaded", () => {
     const wasOpen = menu !== null && !menu.hasAttribute("hidden");
     menu?.setAttribute("hidden", "");
     menuButton?.setAttribute("aria-expanded", "false");
+    frame?.classList.remove("options-open");
     if (wasOpen && restoreView) restoreActiveViewAfterDialog();
+    else if (wasOpen) window.requestAnimationFrame(() => void syncBrowserTabBounds());
   };
 
   const getActiveTab = () => tabs.find((tab) => tab.id === activeTabId) ?? tabs[0];
@@ -1058,7 +1060,8 @@ window.addEventListener("DOMContentLoaded", () => {
     if (isOpen) {
       closeMenu();
     } else {
-      await hideBrowserTabs();
+      frame?.classList.toggle("options-open", Boolean(getActiveTab()?.hasWebview));
+      await syncBrowserTabBounds();
       menuButton.setAttribute("aria-expanded", "true");
       menu?.removeAttribute("hidden");
     }

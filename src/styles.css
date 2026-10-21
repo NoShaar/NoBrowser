@@ -405,6 +405,10 @@ button:focus-visible {
     linear-gradient(148deg, #0d141b 0%, #0a1016 54%, #0b1218 100%);
 }
 
+.app-frame.options-open .browser-stage {
+  margin-left: 210px;
+}
+
 .browser-message {
   position: absolute;
   right: 22px;
