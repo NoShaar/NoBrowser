@@ -11,9 +11,17 @@ window.addEventListener("DOMContentLoaded", () => {
   const menuButton = document.querySelector<HTMLButtonElement>("#menu-button");
   const menu = document.querySelector<HTMLElement>("#options-menu");
   const aboutButton = document.querySelector<HTMLButtonElement>("#about-button");
+  const checkVersionButton = document.querySelector<HTMLButtonElement>("#check-version-button");
   const aboutDialog = document.querySelector<HTMLElement>("#about-dialog");
   const aboutClose = document.querySelector<HTMLButtonElement>("#about-close");
   const appVersion = document.querySelector<HTMLElement>("#app-version");
+  const versionDialog = document.querySelector<HTMLElement>("#version-dialog");
+  const versionTitle = document.querySelector<HTMLElement>("#version-title");
+  const versionStatus = document.querySelector<HTMLElement>("#version-status");
+  const installedVersion = document.querySelector<HTMLElement>("#installed-version");
+  const versionIndicator = document.querySelector<HTMLElement>("#version-check-indicator");
+  const versionDetailsButton = document.querySelector<HTMLButtonElement>("#version-details-button");
+  const versionClose = document.querySelector<HTMLButtonElement>("#version-close");
   const updateDialog = document.querySelector<HTMLElement>("#update-dialog");
   const updateVersion = document.querySelector<HTMLElement>("#update-version");
   const releaseNotes = document.querySelector<HTMLElement>("#release-notes");
@@ -25,7 +33,10 @@ window.addEventListener("DOMContentLoaded", () => {
   const updateNow = document.querySelector<HTMLButtonElement>("#update-now");
   const updateLater = document.querySelector<HTMLButtonElement>("#update-later");
   let pendingUpdate: Update | null = null;
+  let versionUpdate: Update | null = null;
+  let currentVersion = "";
   let updateInProgress = false;
+  let versionCheckInProgress = false;
 
   const syncMaximizedState = async () => {
     const maximized = await appWindow.isMaximized();
@@ -49,6 +60,15 @@ window.addEventListener("DOMContentLoaded", () => {
     if (pendingUpdate) {
       await pendingUpdate.close();
       pendingUpdate = null;
+    }
+  };
+
+  const closeVersionDialog = async () => {
+    if (versionCheckInProgress) return;
+    versionDialog?.setAttribute("hidden", "");
+    if (versionUpdate) {
+      await versionUpdate.close();
+      versionUpdate = null;
     }
   };
 
@@ -101,6 +121,43 @@ window.addEventListener("DOMContentLoaded", () => {
     } catch {
       window.clearTimeout(timeoutId);
       await finishStartupCheck(null);
+    }
+  };
+
+  const checkVersionStatus = async () => {
+    closeMenu();
+    versionDialog?.removeAttribute("hidden");
+    versionTitle?.replaceChildren("Verificando versão");
+    versionStatus?.replaceChildren("Conferindo se há uma versão nova.");
+    if (installedVersion) installedVersion.textContent = currentVersion || "…";
+    versionIndicator?.removeAttribute("hidden");
+    versionDetailsButton?.setAttribute("hidden", "");
+    versionCheckInProgress = true;
+    versionClose?.setAttribute("disabled", "");
+
+    try {
+      if (versionUpdate) {
+        await versionUpdate.close();
+        versionUpdate = null;
+      }
+      currentVersion = await getVersion();
+      if (installedVersion) installedVersion.textContent = currentVersion;
+      versionUpdate = await check({ timeout: CHECK_TIMEOUT_MS });
+      if (versionUpdate) {
+        versionTitle?.replaceChildren("Nova versão disponível");
+        versionStatus?.replaceChildren(`A versão ${versionUpdate.version} está pronta para instalar.`);
+        versionDetailsButton?.removeAttribute("hidden");
+      } else {
+        versionTitle?.replaceChildren("Você está atualizado");
+        versionStatus?.replaceChildren("Seu NoBrowser já está na versão mais recente.");
+      }
+    } catch {
+      versionTitle?.replaceChildren("Não foi possível verificar");
+      versionStatus?.replaceChildren("Confira sua conexão e tente novamente.");
+    } finally {
+      versionCheckInProgress = false;
+      versionIndicator?.setAttribute("hidden", "");
+      versionClose?.removeAttribute("disabled");
     }
   };
 
@@ -201,6 +258,8 @@ window.addEventListener("DOMContentLoaded", () => {
     aboutClose?.focus();
   });
 
+  checkVersionButton?.addEventListener("click", () => void checkVersionStatus());
+
   aboutClose?.addEventListener("click", () => {
     aboutDialog?.setAttribute("hidden", "");
     aboutButton?.focus();
@@ -208,6 +267,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   updateNow?.addEventListener("click", () => void installAvailableUpdate());
   updateLater?.addEventListener("click", () => void closeUpdateDialog());
+  versionDetailsButton?.addEventListener("click", () => {
+    if (!versionUpdate) return;
+    const update = versionUpdate;
+    versionUpdate = null;
+    versionDialog?.setAttribute("hidden", "");
+    showUpdateDialog(update);
+  });
+  versionClose?.addEventListener("click", () => void closeVersionDialog());
 
   document.querySelectorAll<HTMLButtonElement>("#exit-button, #close-button").forEach((button) => {
     button.addEventListener("click", () => void appWindow.close());
@@ -231,16 +298,18 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !updateInProgress) {
+    if (event.key === "Escape" && !updateInProgress && !versionCheckInProgress) {
       closeMenu();
       aboutDialog?.setAttribute("hidden", "");
       void closeUpdateDialog();
+      void closeVersionDialog();
     }
   });
 
   void syncMaximizedState();
   void appWindow.onResized(syncMaximizedState);
   void getVersion().then((version) => {
+    currentVersion = version;
     if (appVersion) appVersion.textContent = `Versão ${version}`;
   });
   void checkForStartupUpdate();

@@ -1,6 +1,6 @@
 # NoBrowser
 
-Janela desktop inicial do NoBrowser, feita com Tauri 2, Rust e TypeScript. Esta versão inclui a moldura visual, o menu Sobre, os controles da janela e a base para atualizações assinadas pelo GitHub Releases. A navegação por sites será adicionada em uma etapa futura.
+Janela desktop inicial do NoBrowser, feita com Tauri 2, Rust e TypeScript. A versão atual inclui o menu Sobre, a verificação manual e automática de atualizações e a instalação de versões assinadas pelo GitHub Releases. A navegação por sites será adicionada em uma etapa futura.
 
 ## Executar no Windows
 

@@ -66,6 +66,7 @@ button:focus-visible {
 .app-frame.is-maximized {
   border-color: transparent;
   border-radius: 0;
+  box-shadow: none;
 }
 
 .titlebar {
@@ -497,6 +498,38 @@ button:focus-visible {
 .about-card button:hover {
   border-color: rgba(145, 215, 199, 0.5);
   background: rgba(145, 215, 199, 0.12);
+}
+
+.version-card .version-label strong {
+  color: #a9cfc5;
+  font-weight: 500;
+}
+
+.version-card button + button {
+  margin-top: 9px;
+}
+
+.version-card button:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.version-check-indicator {
+  width: 76px;
+  height: 2px;
+  margin-top: 17px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: rgba(145, 215, 199, 0.12);
+}
+
+.version-check-indicator span {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  animation: check-progress 1s ease-in-out infinite;
 }
 
 .update-dialog {

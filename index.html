@@ -20,6 +20,8 @@
           <div class="options-menu" id="options-menu" role="menu" hidden>
             <button id="about-button" type="button" role="menuitem">Sobre o NoBrowser</button>
             <span class="menu-divider" aria-hidden="true"></span>
+            <button id="check-version-button" type="button" role="menuitem">Verificar versão</button>
+            <span class="menu-divider" aria-hidden="true"></span>
             <button id="exit-button" type="button" role="menuitem">Encerrar</button>
           </div>
         </div>
@@ -81,6 +83,19 @@
             <button class="defer-update" id="update-later" type="button">Agora não</button>
             <button class="install-update" id="update-now" type="button">Atualizar agora</button>
           </div>
+        </div>
+      </aside>
+
+      <aside class="version-dialog about-dialog" id="version-dialog" role="dialog" aria-modal="true" aria-labelledby="version-title" hidden>
+        <div class="about-card version-card">
+          <img src="/src/assets/nobrowser-mark.svg" alt="" />
+          <p class="eyebrow">VERSÃO DO NAVEGADOR</p>
+          <h2 id="version-title">Verificando versão</h2>
+          <p id="version-status" aria-live="polite">Conferindo se há uma versão nova.</p>
+          <span class="version-label">Versão instalada: <strong id="installed-version">—</strong></span>
+          <div class="version-check-indicator" id="version-check-indicator" aria-hidden="true"><span></span></div>
+          <button id="version-details-button" type="button" hidden>Ver atualização</button>
+          <button id="version-close" type="button">Fechar</button>
         </div>
       </aside>
     </main>
