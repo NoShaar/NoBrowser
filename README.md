@@ -1,6 +1,6 @@
 # NoBrowser
 
-NoBrowser é um navegador desktop em construção, feito com Tauri 2, Rust e TypeScript. A versão 0.3.0 adiciona abas, barra de endereço com pesquisa, navegação e abertura de páginas em webviews do sistema. No Windows, as páginas usam WebView2; outros sistemas usam o motor web nativo disponível.
+NoBrowser é um navegador desktop em construção, feito com Tauri 2, Rust e TypeScript. A versão 0.3.0 adiciona abas, barra de endereço com pesquisa, navegação e abertura de páginas em webviews do sistema. A versão 0.3.1 corrige o redimensionamento das páginas ao restaurar a janela. No Windows, as páginas usam WebView2; outros sistemas usam o motor web nativo disponível.
 
 ## Usar
 
@@ -23,7 +23,7 @@ O Tauri usa WebView2 no Windows, WebKitGTK no Linux e WKWebView no macOS. O inst
 
 1. Atualize a versão em `src-tauri/tauri.conf.json` e mantenha a mesma versão em `package.json` e `src-tauri/Cargo.toml`.
 2. Crie `release-notes/v<VERSÃO>.md` com as notas que serão exibidas no aviso de atualização.
-3. Envie o commit e a tag correspondente, por exemplo `v0.3.0`.
+3. Envie o commit e a tag correspondente, por exemplo `v0.3.1`.
 
 O workflow gera o instalador NSIS e os artefatos assinados do atualizador. A chave privada do atualizador fica fora do repositório e deve ser cadastrada como segredo `TAURI_SIGNING_PRIVATE_KEY` em `Settings > Secrets and variables > Actions`. Se a chave tiver senha, cadastre também `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. A chave pública correspondente fica em `src-tauri/tauri.conf.json`.
 

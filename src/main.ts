@@ -354,6 +354,7 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   const syncBrowserTabBounds = async () => {
+    if (document.visibilityState === "hidden" || await appWindow.isMinimized()) return;
     const bounds = getStageBounds();
     await Promise.all(tabs.filter((tab) => tab.hasWebview).map((tab) =>
       invoke("set_browser_tab_bounds", { tabLabel: tab.label, ...bounds }).catch(() => undefined),
@@ -365,6 +366,21 @@ window.addEventListener("DOMContentLoaded", () => {
   const restoreActiveViewAfterDialog = () => {
     if (!versionDialog?.hasAttribute("hidden") || !aboutDialog?.hasAttribute("hidden") || !updateDialog?.hasAttribute("hidden")) return;
     void showActiveBrowserTab(false);
+  };
+
+  let boundsRefreshTimeout = 0;
+  const refreshBrowserTabLayout = () => {
+    const refresh = async () => {
+      if (document.visibilityState === "hidden" || await appWindow.isMinimized()) return;
+      await syncBrowserTabBounds();
+      restoreActiveViewAfterDialog();
+    };
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => void refresh());
+    });
+    window.clearTimeout(boundsRefreshTimeout);
+    boundsRefreshTimeout = window.setTimeout(() => void refresh(), 120);
   };
 
   const closeUpdateDialog = async () => {
@@ -676,7 +692,13 @@ window.addEventListener("DOMContentLoaded", () => {
   void syncMaximizedState();
   void appWindow.onResized(() => {
     void syncMaximizedState();
-    void syncBrowserTabBounds();
+    refreshBrowserTabLayout();
+  });
+  void appWindow.onFocusChanged(({ payload: focused }) => {
+    if (focused) refreshBrowserTabLayout();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") refreshBrowserTabLayout();
   });
   void getVersion().then((version) => {
     currentVersion = version;

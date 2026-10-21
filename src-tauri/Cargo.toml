@@ -1,6 +1,6 @@
 [package]
 name = "nobrowser"
-version = "0.3.0"
+version = "0.3.1"
 description = "NoBrowser desktop shell"
 authors = ["NoBrowser"]
 edition = "2024"
