@@ -1,0 +1,73 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "NoBrowser",
+  "version": "0.1.0",
+  "identifier": "com.nobrowser.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "splashscreen",
+        "title": "NoBrowser",
+        "url": "splash.html",
+        "width": 380,
+        "height": 230,
+        "center": true,
+        "decorations": false,
+        "transparent": true,
+        "shadow": false,
+        "resizable": false,
+        "skipTaskbar": true,
+        "theme": "Dark"
+      },
+      {
+        "label": "main",
+        "title": "NoBrowser",
+        "width": 1180,
+        "height": 760,
+        "minWidth": 800,
+        "minHeight": 560,
+        "center": true,
+        "decorations": false,
+        "transparent": true,
+        "shadow": false,
+        "visible": false,
+        "noRedirectionBitmap": true,
+        "theme": "Dark"
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "createUpdaterArtifacts": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEFFMzgxMTgwNTEyMTEzRkYKUldUL0V5RlJnQkU0cm9xSU5NZTFIQVdZK0hnaXM5d1JwQXNScUpOUmVxOTRsQUxzQXVuQi9QcUIK",
+      "endpoints": [
+        "https://github.com/NoShaar/NoBrowser/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      },
+      "requireSignedVersion": true
+    }
+  }
+}
