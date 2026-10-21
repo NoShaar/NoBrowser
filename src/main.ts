@@ -834,7 +834,9 @@ window.addEventListener("DOMContentLoaded", () => {
     ));
   };
 
-  const hideViewsForDialog = () => void hideBrowserTabs();
+  const hideViewsForDialog = async () => {
+    await hideBrowserTabs();
+  };
 
   const restoreActiveViewAfterDialog = () => {
     if (!versionDialog?.hasAttribute("hidden") || !aboutDialog?.hasAttribute("hidden") || !updateDialog?.hasAttribute("hidden") || !menu?.hasAttribute("hidden")) return;
@@ -882,8 +884,8 @@ window.addEventListener("DOMContentLoaded", () => {
     restoreActiveViewAfterDialog();
   };
 
-  const showUpdateDialog = (update: Update) => {
-    hideViewsForDialog();
+  const showUpdateDialog = async (update: Update) => {
+    await hideViewsForDialog();
     pendingUpdate = update;
     if (updateVersion) updateVersion.textContent = `Versão ${update.version}`;
     const notes = update.body?.trim().split(/\r?\n/).map((line) =>
@@ -909,7 +911,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const finishStartupCheck = async (update: Update | null) => {
     await revealMainWindow();
-    if (update) showUpdateDialog(update);
+    if (update) await showUpdateDialog(update);
     else restoreActiveViewAfterDialog();
   };
 
@@ -927,7 +929,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       if (result === null) {
         void updateCheck.then((lateUpdate) => {
-          if (lateUpdate) showUpdateDialog(lateUpdate);
+          if (lateUpdate) void showUpdateDialog(lateUpdate);
         }).catch(() => undefined);
       }
     } catch {
@@ -938,7 +940,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const checkVersionStatus = async () => {
     closeMenu(false);
-    hideViewsForDialog();
+    await hideViewsForDialog();
     versionDialog?.removeAttribute("hidden");
     versionTitle?.replaceChildren("Verificando versão");
     versionStatus?.replaceChildren("Conferindo se há uma versão nova.");
@@ -1006,7 +1008,7 @@ window.addEventListener("DOMContentLoaded", () => {
     try {
       const update = await check({ timeout: CHECK_TIMEOUT_MS });
       if (update) {
-        showUpdateDialog(update);
+        await showUpdateDialog(update);
       } else {
         if (updateError) updateError.textContent = "Nenhuma atualização nova está disponível agora.";
         updateError?.removeAttribute("hidden");
@@ -1070,9 +1072,9 @@ window.addEventListener("DOMContentLoaded", () => {
   historyButton?.addEventListener("click", () => void openInternalPage("history"));
   settingsButton?.addEventListener("click", () => void openInternalPage("settings"));
 
-  aboutButton?.addEventListener("click", () => {
+  aboutButton?.addEventListener("click", async () => {
     closeMenu(false);
-    hideViewsForDialog();
+    await hideViewsForDialog();
     aboutDialog?.removeAttribute("hidden");
     aboutClose?.focus();
   });
@@ -1087,12 +1089,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   updateNow?.addEventListener("click", () => void installAvailableUpdate());
   updateLater?.addEventListener("click", () => void closeUpdateDialog());
-  versionDetailsButton?.addEventListener("click", () => {
+  versionDetailsButton?.addEventListener("click", async () => {
     if (!versionUpdate) return;
     const update = versionUpdate;
     versionUpdate = null;
     versionDialog?.setAttribute("hidden", "");
-    showUpdateDialog(update);
+    await showUpdateDialog(update);
   });
   versionClose?.addEventListener("click", () => void closeVersionDialog());
 
