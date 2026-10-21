@@ -32,6 +32,7 @@ Esta primeira etapa de navegação usa webviews nativas do Tauri para abrir pág
 - O updater consulta releases públicas no GitHub e instala artefatos assinados. A chave privada e sua senha permanecem fora do repositório, guardadas como segredos do GitHub Actions.
 - A versão publicada precisa trazer notas de versão e ser assinada pela mesma chave privada correspondente à chave pública incluída no aplicativo.
 - A versão 0.3.1 reaplica os limites das páginas ao restaurar a janela e ignora redimensionamentos emitidos enquanto ela está minimizada.
+- A versão 0.4.0 adiciona histórico local, sugestões baseadas nos sites mantidos no histórico, restauração opcional de sessão, busca pelo Google, atalhos e páginas internas de histórico/configurações.
 
 Senhas sincronizadas, loja de extensões, contas, sincronização entre dispositivos e recursos avançados de privacidade ficam para depois do protótipo.
 

@@ -37,6 +37,9 @@
             <span>Opções</span>
           </button>
           <div class="options-menu" id="options-menu" role="menu" hidden>
+            <button id="history-button" type="button" role="menuitem">Histórico</button>
+            <button id="settings-button" type="button" role="menuitem">Configurações</button>
+            <span class="menu-divider" aria-hidden="true"></span>
             <button id="about-button" type="button" role="menuitem">Sobre o NoBrowser</button>
             <span class="menu-divider" aria-hidden="true"></span>
             <button id="check-version-button" type="button" role="menuitem">Verificar versão</button>
@@ -66,7 +69,8 @@
 
         <label class="address-shell" for="address-input">
           <span class="address-indicator" id="address-indicator" aria-hidden="true"></span>
-          <input id="address-input" name="address" type="text" inputmode="url" spellcheck="false" placeholder="Pesquise ou digite um endereço" aria-label="Pesquise ou digite um endereço" />
+          <input id="address-input" name="address" type="text" inputmode="url" spellcheck="false" autocomplete="off" list="address-suggestions" placeholder="Pesquise ou digite um endereço" aria-label="Pesquise ou digite um endereço" />
+          <datalist id="address-suggestions"></datalist>
           <button class="address-go" type="submit" aria-label="Abrir endereço" title="Abrir endereço">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M10.4 5.4 15 10l-4.6 4.6" /></svg>
           </button>
@@ -84,6 +88,17 @@
           <h1 id="welcome-title">Seu espaço na web.</h1>
           <p class="welcome-copy">Digite um endereço ou faça uma pesquisa para começar.</p>
           <span class="coming-soon">Uma nova forma de navegar, no seu ritmo</span>
+        </section>
+        <section class="internal-page" id="internal-page" aria-live="polite" hidden>
+          <header class="internal-page-header">
+            <div>
+              <p class="eyebrow" id="internal-page-kicker"></p>
+              <h1 id="internal-page-title"></h1>
+              <p id="internal-page-description"></p>
+            </div>
+            <div class="internal-page-actions" id="internal-page-actions"></div>
+          </header>
+          <div class="internal-page-content" id="internal-page-content"></div>
         </section>
         <div class="browser-message" id="browser-message" role="status" hidden></div>
       </section>
