@@ -12,20 +12,6 @@
   <body>
     <main class="app-frame">
       <header class="titlebar" data-tauri-drag-region>
-        <div class="menu-anchor">
-          <button class="menu-trigger" id="menu-button" type="button" aria-expanded="false" aria-controls="options-menu">
-            <span class="menu-glyph" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span>Opções</span>
-          </button>
-          <div class="options-menu" id="options-menu" role="menu" hidden>
-            <button id="about-button" type="button" role="menuitem">Sobre o NoBrowser</button>
-            <span class="menu-divider" aria-hidden="true"></span>
-            <button id="check-version-button" type="button" role="menuitem">Verificar versão</button>
-            <span class="menu-divider" aria-hidden="true"></span>
-            <button id="exit-button" type="button" role="menuitem">Encerrar</button>
-          </div>
-        </div>
-
         <div class="wordmark" data-tauri-drag-region aria-label="NoBrowser">
           <img src="/src/assets/nobrowser-mark.svg" alt="" />
           <span>NoBrowser</span>
@@ -44,16 +30,62 @@
         </div>
       </header>
 
-      <section class="welcome" aria-labelledby="welcome-title">
-        <div class="welcome-orbit" aria-hidden="true">
-          <span class="orbit-line orbit-line-one"></span>
-          <span class="orbit-line orbit-line-two"></span>
-          <img src="/src/assets/nobrowser-mark.svg" alt="" />
+      <nav class="tabbar" aria-label="Abas do navegador">
+        <div class="menu-anchor">
+          <button class="menu-trigger" id="menu-button" type="button" aria-expanded="false" aria-controls="options-menu">
+            <span class="menu-glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span>Opções</span>
+          </button>
+          <div class="options-menu" id="options-menu" role="menu" hidden>
+            <button id="about-button" type="button" role="menuitem">Sobre o NoBrowser</button>
+            <span class="menu-divider" aria-hidden="true"></span>
+            <button id="check-version-button" type="button" role="menuitem">Verificar versão</button>
+            <span class="menu-divider" aria-hidden="true"></span>
+            <button id="exit-button" type="button" role="menuitem">Encerrar</button>
+          </div>
         </div>
-        <p class="eyebrow">NO SEU PRÓPRIO FLUXO</p>
-        <h1 id="welcome-title">Seu espaço na web.</h1>
-        <p class="welcome-copy">Uma nova forma de navegar começa aqui.</p>
-        <span class="coming-soon">A navegação chega na próxima etapa</span>
+
+        <div class="tab-strip" id="tab-strip" role="tablist" aria-label="Abas abertas"></div>
+        <button class="new-tab-button" id="new-tab-button" type="button" aria-label="Nova aba" title="Nova aba">
+          <span aria-hidden="true">+</span>
+        </button>
+      </nav>
+
+      <form class="browser-toolbar" id="address-form" autocomplete="off">
+        <div class="navigation-controls" aria-label="Navegação">
+          <button class="navigation-button" id="back-button" type="button" aria-label="Voltar" title="Voltar" disabled>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.9 4.8 6.7 10l5.2 5.2" /></svg>
+          </button>
+          <button class="navigation-button" id="forward-button" type="button" aria-label="Avançar" title="Avançar" disabled>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8.1 4.8 5.2 5.2-5.2 5.2" /></svg>
+          </button>
+          <button class="navigation-button refresh-button" id="reload-button" type="button" aria-label="Recarregar página" title="Recarregar">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15.7 8A5.9 5.9 0 0 0 5.5 5.5L4 7" /><path d="M4 3.9V7h3.1M4.3 12a5.9 5.9 0 0 0 10.2 2.5l1.5-1.5" /><path d="M16 16.1V13h-3.1" /></svg>
+          </button>
+        </div>
+
+        <label class="address-shell" for="address-input">
+          <span class="address-indicator" id="address-indicator" aria-hidden="true"></span>
+          <input id="address-input" name="address" type="text" inputmode="url" spellcheck="false" placeholder="Pesquise ou digite um endereço" aria-label="Pesquise ou digite um endereço" />
+          <button class="address-go" type="submit" aria-label="Abrir endereço" title="Abrir endereço">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M10.4 5.4 15 10l-4.6 4.6" /></svg>
+          </button>
+        </label>
+      </form>
+
+      <section class="browser-stage" id="browser-stage" aria-label="Página atual">
+        <section class="welcome" id="welcome-screen" aria-labelledby="welcome-title">
+          <div class="welcome-orbit" aria-hidden="true">
+            <span class="orbit-line orbit-line-one"></span>
+            <span class="orbit-line orbit-line-two"></span>
+            <img src="/src/assets/nobrowser-mark.svg" alt="" />
+          </div>
+          <p class="eyebrow">NO SEU PRÓPRIO FLUXO</p>
+          <h1 id="welcome-title">Seu espaço na web.</h1>
+          <p class="welcome-copy">Digite um endereço ou faça uma pesquisa para começar.</p>
+          <span class="coming-soon">Uma nova forma de navegar, no seu ritmo</span>
+        </section>
+        <div class="browser-message" id="browser-message" role="status" hidden></div>
       </section>
 
       <aside class="about-dialog" id="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title" hidden>
